@@ -1,23 +1,39 @@
-import logo from './logo.svg';
-import './App.css';
-
+import { useEffect, useState } from "react";
+import "./App.css";
+import Movies from "./components/movies/Movies";
+import axios from "axios";
+import Loader from "./components/loader/Loader";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Error from "./components/error/Error";
+import Movie from "./components/movie/Movie";
+import Search from "./components/searchfilter/Search";
 function App() {
+  const [movies, setMovies] = useState([]);
+  const [loading, setloading] = useState(false);
+  useEffect(() => {
+    setloading(true);
+    fetch("https://movie-task.vercel.app/api/popular?page=1")
+      .then((response) => {
+        return response.json();
+      })
+      .then((data) => {
+        setMovies(data.data.results);
+        setloading(false);
+      });
+  }, []);
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <Router>
+        <Search />
+        {loading && <Loader />}
+
+        <Routes>
+          <Route path="/" element={<Movies data={movies} />} />
+          <Route path="/movie/:pid" element={<Movie />} />
+          {!loading && <Route path="*" element={<Error />} />}
+        </Routes>
+      </Router>
     </div>
   );
 }
